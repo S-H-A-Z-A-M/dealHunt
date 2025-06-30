@@ -4,12 +4,12 @@ const notificationSchema = new Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "UserId",
+      ref: "User",
       required: true,
     },
     game: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "GameId",
+      ref: "Game", 
       required: true,
     },
     targetPrice: {
@@ -20,10 +20,9 @@ const notificationSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    specificPlatform: {
-      type: String,
-      required: true, // e.g., "Steam", "Epic", etc.
-      trim: true,
+    specificPlatforms: {
+      type: [String], // Array of platform names
+      default: [],
     },
     email: {
       type: Boolean,
@@ -33,13 +32,9 @@ const notificationSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    whatsApp: {
-      type: Boolean,
-      default: false,
-    },
     notifiedAt: {
       type: Date,
-      default: null,
+      default: null, // When was the last notification sent (optional)
     },
   },
   { timestamps: true }

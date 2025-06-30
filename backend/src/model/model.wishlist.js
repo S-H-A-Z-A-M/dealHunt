@@ -7,11 +7,17 @@ const wishlistSchema = new Schema(
       ref: "User",
       required: true,
     },
-    game: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Game",
+    name: {
+      type: String,
       required: true,
+      trim: true,
     },
+    games: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Game",
+      },
+    ],
   },
   { timestamps: true }
 );
