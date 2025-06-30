@@ -22,7 +22,4 @@ const wishlistSchema = new Schema(
   { timestamps: true }
 );
 
-// Optional: prevent duplicate wishlist entries for the same user and game
-wishlistSchema.index({ user: 1, game: 1 }, { unique: true });
-
 export const Wishlist = mongoose.model("Wishlist", wishlistSchema);
