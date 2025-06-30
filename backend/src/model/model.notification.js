@@ -32,6 +32,10 @@ const notificationSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    whatsApp: {
+      type: Boolean,
+      default: false,
+    },
     notifiedAt: {
       type: Date,
       default: null, // When was the last notification sent (optional)
