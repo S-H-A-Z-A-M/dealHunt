@@ -1,8 +1,9 @@
 'use client';
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { LoginLink, LogoutLink, RegisterLink, useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getGameImageByTitle } from '@/lib/getGameImage';
+import axios from 'axios';
 import {
   Search,
   Bell,
@@ -10,7 +11,13 @@ import {
   Home,
   ListFilter,
   TrendingUp,
+  X,
+  UserPlus,
+  Globe,
+  Calendar,
+  Gamepad2,
 } from 'lucide-react';
+
 // Interfaces
 interface Game {
   id: number;
@@ -27,6 +34,33 @@ interface NavItemProps {
   text: string;
 }
 
+interface NewUserData {
+  steamId: string;
+  displayName: string;
+  favoriteGenres: string[];
+  region: string;
+  birthday: string;
+  notificationPreferences: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+}
+
+interface PageProps {
+  isNewUser?: boolean;
+}
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  isPhoneVerified: boolean;
+  wishlists: string[];
+  friendList: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 const NavItem: React.FC<NavItemProps> = ({ icon, text }) => (
   <a
     href="#"
@@ -122,6 +156,279 @@ const HowItWorksStep: React.FC<HowItWorksStepProps> = ({
   </motion.div>
 );
 
+// New User Onboarding Popup Component
+const NewUserOnboardingPopup: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: NewUserData) => void;
+}> = ({ isOpen, onClose, onSubmit }) => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<NewUserData>({
+    steamId: '',
+    displayName: '',
+    favoriteGenres: [],
+    region: '',
+    birthday: '',
+    notificationPreferences: {
+      email: true,
+      push: true,
+      sms: false,
+    },
+  });
+
+  const gameGenres = [
+    'Action', 'Adventure', 'RPG', 'Strategy', 'Simulation', 'Sports',
+    'Racing', 'Puzzle', 'Horror', 'Indie', 'Multiplayer', 'Casual'
+  ];
+
+  const regions = [
+    'North America', 'Europe', 'Asia Pacific', 'South America', 
+    'Middle East', 'Africa', 'Other'
+  ];
+
+  const handleGenreToggle = (genre: string) => {
+    setFormData(prev => ({
+      ...prev,
+      favoriteGenres: prev.favoriteGenres.includes(genre)
+        ? prev.favoriteGenres.filter(g => g !== genre)
+        : [...prev.favoriteGenres, genre]
+    }));
+  };
+
+  const handleSubmit = () => {
+    onSubmit(formData);
+    onClose();
+  };
+
+  const nextStep = () => setStep(prev => Math.min(prev + 1, 3));
+  const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 border border-gray-700 shadow-2xl"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center">
+              <UserPlus className="w-6 h-6 mr-2 text-blue-400" />
+              Welcome to DealHunt!
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <div className="flex space-x-2 mb-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={`flex-1 h-2 rounded-full ${
+                    i <= step ? 'bg-blue-500' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+            <p className="text-gray-300 text-sm">Step {step} of 3</p>
+          </div>
+
+          {step === 1 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Basic Information
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Display Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.displayName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your display name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <Gamepad2 className="w-4 h-4 mr-2" />
+                  Steam ID (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={formData.steamId}
+                  onChange={(e) => setFormData(prev => ({ ...prev, steamId: e.target.value }))}
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your Steam ID"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  This helps us personalize your experience
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Preferences
+              </h3>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Favorite Game Genres
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {gameGenres.map((genre) => (
+                    <button
+                      key={genre}
+                      onClick={() => handleGenreToggle(genre)}
+                      className={`p-2 rounded-lg text-sm transition-colors ${
+                        formData.favoriteGenres.includes(genre)
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {genre}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <Globe className="w-4 h-4 mr-2" />
+                  Region
+                </label>
+                <select
+                  value={formData.region}
+                  onChange={(e) => setFormData(prev => ({ ...prev, region: e.target.value }))}
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select your region</option>
+                  {regions.map((region) => (
+                    <option key={region} value={region}>
+                      {region}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Notification Preferences
+              </h3>
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.notificationPreferences.email}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      notificationPreferences: {
+                        ...prev.notificationPreferences,
+                        email: e.target.checked
+                      }
+                    }))}
+                    className="mr-3 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300">Email notifications for deals</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.notificationPreferences.push}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      notificationPreferences: {
+                        ...prev.notificationPreferences,
+                        push: e.target.checked
+                      }
+                    }))}
+                    className="mr-3 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300">Push notifications</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={formData.notificationPreferences.sms}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      notificationPreferences: {
+                        ...prev.notificationPreferences,
+                        sms: e.target.checked
+                      }
+                    }))}
+                    className="mr-3 w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-gray-300">SMS notifications (premium)</span>
+                </label>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Birthday (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={formData.birthday}
+                  onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                  className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-between mt-8">
+            <button
+              onClick={prevStep}
+              disabled={step === 1}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                step === 1
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+            >
+              Previous
+            </button>
+            {step < 3 ? (
+              <button
+                onClick={nextStep}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Next
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Complete Setup
+              </button>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 // Dummy Games
 const DummyData: Game[] = [
   {
@@ -163,10 +470,15 @@ const DummyData: Game[] = [
 ];
 
 // Page Component
-const Page: React.FC = () => {
+const Page: React.FC<PageProps> = ({ isNewUser = false }) => {
+  const { user, isAuthenticated, isLoading } = useKindeBrowserClient();
+
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userCheckLoading, setUserCheckLoading] = useState(false);
 
   useEffect(() => {
     const enhanceDataWithImages = async () => {
@@ -194,6 +506,52 @@ const Page: React.FC = () => {
     enhanceDataWithImages();
   }, []);
 
+  // Check if user is new and show onboarding
+ useEffect(() => {
+    const checkUserInDatabase = async () => {
+      if (isAuthenticated && user && !isLoading) {
+        setUserCheckLoading(true);
+        try {
+          const response = await axios.get('/api/user/check');
+          const { user: dbUser, isNewUser: isNewUserFromDb } = response.data;
+          
+          setUserData(dbUser);
+          
+          if (isNewUserFromDb) {
+            setShowOnboarding(true);
+            console.log('New user detected, showing onboarding popup');
+          }
+        } catch (error) {
+          console.error('Error checking user in database:', error);
+          // If there's an error, still show onboarding for safety
+          if (axios.isAxiosError(error) && error.response?.status === 401) {
+            console.log('User not authenticated');
+          } else {
+            // For other errors, assume new user
+            setShowOnboarding(true);
+          }
+        } finally {
+          setUserCheckLoading(false);
+        }
+      }
+    };
+
+    checkUserInDatabase();
+  }, [isAuthenticated, user, isLoading]);
+
+ const handleOnboardingSubmit = async (formData: NewUserData) => {
+    try {
+      const response = await axios.post('/api/user/onboarding', formData);
+      
+      if (response.data.user) {
+        setUserData(response.data.user);
+        console.log('User onboarding data saved successfully');
+      }
+    } catch (error) {
+      console.error('Error saving user onboarding data:', error);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -211,6 +569,13 @@ const Page: React.FC = () => {
       ></div>
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-900/90 to-gray-800/90"></div>
 
+      {/* New User Onboarding Popup */}
+      <NewUserOnboardingPopup
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onSubmit={handleOnboardingSubmit}
+      />
+
       {/* Content */}
       <div className="relative z-10 min-h-screen text-white">
         {/* Header */}
@@ -226,18 +591,28 @@ const Page: React.FC = () => {
               <NavItem icon={<Bell className="w-5 h-5 mr-2" />} text="News" />
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="bg-gray-700 hover:bg-gray-600 py-2 px-4 rounded-lg flex items-center transition duration-300 shadow-md"
-              >
-                <User className="w-5 h-5 mr-2" /><LoginLink>Login</LoginLink>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg transition duration-300 shadow-md"
-              >
-                <LogoutLink>Logout</LogoutLink>
-              </motion.button>
+              {!isAuthenticated ? (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gray-700 hover:bg-gray-600 py-2 px-4 rounded-lg flex items-center transition duration-300 shadow-md"
+                >
+                  <User className="w-5 h-5 mr-2" /><LoginLink>Login</LoginLink>
+                  {/* <User className="w-5 h-5 mr-2" /><RegisterLink postLoginRedirectURL="/dashboard">Register</RegisterLink> */}
+                </motion.button>
+               
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <span className="text-gray-300">
+                    Welcome, {user?.given_name || user?.email}!
+                  </span>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-blue-600 hover:bg-blue-700 py-2 px-4 rounded-lg transition duration-300 shadow-md"
+                  >
+                    <LogoutLink>Logout</LogoutLink>
+                  </motion.button>
+                </div>
+              )}
             </div>
           </nav>
         </header>
