@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
           // You can add additional fields to your User model for these onboarding fields
           // For now, we'll just update the basic info
           updatedAt: new Date(),
+          isNewUser: false, // Mark as no longer a new user
         },
       },
       { new: true, upsert: false }
@@ -45,17 +46,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: 'User onboarding completed successfully',
-      user: {
-        id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        isPhoneVerified: updatedUser.isPhoneVerified,
-        wishlists: updatedUser.wishlists,
-        friendList: updatedUser.friendList,
-        createdAt: updatedUser.createdAt,
-        updatedAt: updatedUser.updatedAt,
-      },
+      updatedUser,
     });
   } catch (error) {
     console.error('Error updating user onboarding:', error);

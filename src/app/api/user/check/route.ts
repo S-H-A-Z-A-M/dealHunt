@@ -30,25 +30,15 @@ export async function GET(request: NextRequest) {
         isPhoneVerified: false,
         wishlists: [],
         friendList: [],
+        isNewUser: true, // Mark as new user
       });
 
       await user.save();
-      isNewUser = true;
     }
-
+    
     return NextResponse.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        isPhoneVerified: user.isPhoneVerified,
-        wishlists: user.wishlists,
-        friendList: user.friendList,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
-      isNewUser,
+      user,
+      isNewUser: user.isNewUser,
     });
   } catch (error) {
     console.error('Error checking/creating user:', error);

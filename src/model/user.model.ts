@@ -12,6 +12,7 @@ export interface IUser extends Document {
   friendList: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
+  isNewUser?: boolean; // Optional field to track if the user is new
 }
 
 // 2. Define the schema
@@ -63,6 +64,10 @@ const userSchema: Schema<IUser> = new Schema(
         ref: "User",
       },
     ],
+    isNewUser:{
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );
