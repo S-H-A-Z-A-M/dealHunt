@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { User } from '@/model/user.model'; // Adjust path as needed
 import connectDB from '@/lib/dbConnect'; // Adjust path as needed
+import { sendEmail } from "@/lib/sendEmail";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,6 +42,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    if (!kindeUser.email) {
+      return NextResponse.json(
+        { error: "User email is missing" },
+        { status: 400 }
+      );
+    }
+    
+    // Send welcome email
+    await sendEmail({
+      to: kindeUser.email,
+      subject: "Welcome to DealHunt 🎉",
+      html: "<p>Thank you for joining DealHunt! Let the deals begin! 🛒</p>",
+    });
     // You might want to store the additional onboarding data in a separate collection
     // or extend your User model to include these fields
 
