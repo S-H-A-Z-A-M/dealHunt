@@ -1,26 +1,199 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* :root {
+
+  --bg-dark: hsl(242 100% 6%);
+  --bg: hsl(232 98% 8%);
+  --bg-light: hsl(224 85% 12%);
+  --text: hsl(220 100% 100%);
+  --text-muted: hsl(220 78% 76%);
+  --highlight: hsl(222 55% 46%);
+  --border: hsl(223 69% 35%);
+  --border-muted: hsl(225 94% 24%);
+  --primary: hsl(221 100% 78%);
+  --secondary: hsl(43 77% 49%);
+  --danger: hsl(8 79% 66%);
+  --warning: hsl(54 100% 31%);
+  --success: hsl(156 68% 43%);
+  --info: hsl(217 94% 69%);
+
+  --bg-dark: oklch(0.1 0.075 264);
+  --bg: oklch(0.15 0.075 264);
+  --bg-light: oklch(0.2 0.075 264);
+  --text: oklch(0.96 0.1 264);
+  --text-muted: oklch(0.76 0.1 264);
+  --highlight: oklch(0.5 0.15 264);
+  --border: oklch(0.4 0.15 264);
+  --border-muted: oklch(0.3 0.15 264);
+  --primary: oklch(0.76 0.15 264);
+  --secondary: oklch(0.76 0.15 84);
+  --danger: oklch(0.7 0.15 30);
+  --warning: oklch(0.7 0.15 100);
+  --success: oklch(0.7 0.15 160);
+  --info: oklch(0.7 0.15 260);
+} */
+/* body.light {
+  --bg-dark: hsl(220 100% 95%);
+  --bg: hsl(220 100% 100%);
+  --bg-light: hsl(220 100% 100%);
+  --text: hsl(253 100% 11%);
+  --text-muted: hsl(223 69% 35%);
+  --highlight: hsl(220 100% 100%);
+  --border: hsl(221 64% 58%);
+  --border-muted: hsl(221 95% 71%);
+  --primary: hsl(223 69% 35%);
+  --secondary: hsl(41 100% 12%);
+  --danger: hsl(6 60% 41%);
+  --warning: hsl(52 100% 14%);
+  --success: hsl(161 100% 13%);
+  --info: hsl(217 62% 44%);
+
+  --bg-dark: oklch(0.91 0.075 264);
+  --bg: oklch(0.96 0.075 264);
+  --bg-light: oklch(1 0.075 264);
+  --text: oklch(0.15 0.15 264);
+  --text-muted: oklch(0.4 0.15 264);
+  --highlight: oklch(1 0.15 264);
+  --border: oklch(0.6 0.15 264);
+  --border-muted: oklch(0.7 0.15 264);
+  --primary: oklch(0.4 0.15 264);
+  --secondary: oklch(0.6 0.15 94);
+  --danger: oklch(0.5 0.15 30);
+  --warning: oklch(0.5 0.15 100);
+  --success: oklch(0.5 0.15 160);
+  --info: oklch(0.5 0.15 260);
+} */
+
+/* ============================================
+    REVISED COLOR PALETTE (DARK & LIGHT THEME)
+  ============================================
+*/
+:root {
+  /* =======================================
+     DARK THEME (Default for DealHunt)
+     ======================================= */
+
+  /* HSL Fallbacks */
+  --bg-dark: hsl(234, 38%, 7%);       /* The deep space blue background */
+  --bg: hsl(240, 25%, 12%);           /* Slightly lighter for surfaces */
+  --bg-light: hsl(240, 20%, 18%);     /* Lighter surfaces, cards, inputs */
+  --text: hsl(240, 15%, 95%);         /* Main text, slightly off-white */
+  --text-muted: hsl(240, 10%, 65%);   /* Muted text for descriptions */
+  --highlight: hsl(260, 40%, 45%);    /* Hover states, etc. */
+  --border: hsl(240, 15%, 25%);       /* Borders */
+  --border-muted: hsl(240, 15%, 20%); /* Subtle borders */
+  --primary: hsl(220, 85%, 65%);      /* Primary action color (Track button) */
+  --secondary: hsl(48, 91%, 63%);     /* Secondary action/highlight color (Yellow text) */
+
+  /* OKLCH - Perceptually Uniform Colors */
+  --bg-dark: oklch(0.15 0.02 264);       /* Your #0b0c14 background */
+  --bg: oklch(0.24 0.025 264);           /* Main bg, slightly lifted */
+  --bg-light: oklch(0.3 0.03 264);       /* Cards, inputs, modals, etc. */
+  --text: oklch(0.94 0.02 264);          /* Soft white, not 100% */
+  --text-muted: oklch(0.65 0.02 264);    /* Gray with a hint of blue */
+  --highlight: oklch(0.5 0.14 264);      /* For interactive elements */
+  --border: oklch(0.38 0.025 264);       /* Clear but not harsh borders */
+  --border-muted: oklch(0.32 0.025 264); /* Subtle dividers */
+  --primary: oklch(0.7 0.16 260);        /* Bright, accessible blue for actions */
+  --secondary: oklch(0.85 0.15 90);      /* Your #f5d14a vibrant yellow */
+}
+
+body.light {
+  /* =======================================
+     LIGHT THEME
+     ======================================= */
+
+  /* HSL Fallbacks */
+  --bg-dark: hsl(240, 20%, 90%);      /* Contrasting background area */
+  --bg: hsl(0, 0%, 98%);              /* Main background, off-white */
+  --bg-light: hsl(0, 0%, 100%);       /* Pure white for cards */
+  --text: hsl(240, 10%, 15%);         /* Main text, soft black */
+  --text-muted: hsl(240, 7%, 45%);    /* Muted text */
+  --highlight: hsl(260, 60%, 95%);    /* Light hover state */
+  --border: hsl(240, 10%, 85%);       /* Subtle borders */
+  --border-muted: hsl(240, 10%, 92%); /* Very subtle dividers */
+  --primary: hsl(220, 80%, 55%);      /* Darker blue for readability */
+  --secondary: hsl(45, 90%, 45%);     /* Richer, more grounded yellow */
+
+  /* OKLCH */
+  --bg-dark: oklch(0.9 0.01 264);        /* e.g., Sidebar background */
+  --bg: oklch(0.98 0 0);                 /* Almost white, but not quite */
+  --bg-light: oklch(1 0 0);              /* Pure white for elevation */
+  --text: oklch(0.25 0.03 264);          /* Dark blue-gray, not pure black */
+  --text-muted: oklch(0.5 0.02 264);     /* Lighter gray for secondary info */
+  --highlight: oklch(0.95 0.03 264);     /* Subtle background for hovers */
+  --border: oklch(0.9 0.01 264);         /* Clearly visible border */
+  --border-muted: oklch(0.94 0.01 264);  /* Faint divider lines */
+  --primary: oklch(0.6 0.18 260);        /* Great contrast on light bg */
+  --secondary: oklch(0.7 0.17 90);       /* A richer, more accessible gold/yellow */
+}
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
